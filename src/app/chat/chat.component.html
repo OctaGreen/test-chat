@@ -1,0 +1,7 @@
+<div class="chat" #chat>
+    <div class="message" [ngClass]="{'user-message': isUserMessage(message.uuid)}" [style.backgroundColor]="message.color" *ngFor="let message of messages">
+        <span class="author">{{ message.author }}</span>
+        <p>{{ message.text }}</p>
+    </div>
+</div>
+<textarea class="textarea" #textarea rows="5" placeholder="Write your message" (keyup.enter)="sendMessage($any($event.target).value)"></textarea>

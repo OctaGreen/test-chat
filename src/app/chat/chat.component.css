@@ -1,0 +1,44 @@
+:host {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 5rem;
+}
+
+.chat {
+    border-top: 1px solid lightgrey;
+    flex-grow: 1;
+    overflow: auto;
+    display: grid;
+    grid-auto-rows: min-content;
+}
+
+.message {
+    background-color: rgb(238, 235, 235);
+    border-radius: 1.5rem;
+    margin: 0.5rem 1rem;
+    box-sizing: border-box;
+    padding: 0.5rem 1rem;
+    max-width: 45%;
+    justify-self: start;
+}
+
+.author {
+    font-weight: 600;
+}
+
+.textarea {
+    resize: none;
+    margin: 0;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+    outline: 0;
+    border-radius: 0 0 1rem 1rem;
+    border: 1px solid lightgrey;
+    height: 5rem;
+}
+
+.user-message {
+    color: white;
+    justify-self: end;
+}

@@ -1,0 +1,33 @@
+.main {
+    height: 95vh;
+    width: 50%;
+    margin: 0 auto;
+    font-size: 16px;
+    border-radius: 1rem;
+    box-shadow: 0 0.3rem 0.6rem 0 rgba(0, 0, 0, 0.2), 0 0.6rem 1rem 0 rgba(0, 0, 0, 0.19);
+    display: grid;
+    grid-template-rows: 8% 92%;
+}
+
+.main__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+/* todo: extract to separate component <app-button> */
+.button {
+    color: white;
+    background-color: #0cbe90;
+    border-radius: 1.5rem;
+    border: 1px solid #0cbe90;
+    font-weight: 600;
+    height: 3rem;
+    padding: 0 1.5rem;
+    text-transform: uppercase;
+}
+
+.button:hover {
+    cursor: pointer;
+}

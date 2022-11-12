@@ -1,27 +1,15 @@
-# TestTomoru
+Групповой чат
+Предлагается реализовать клиент-серверное приложение группового чата.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.9.
+Клиент представляет собой SPA с двумя страницами: страница ввода имени и страница с окном чата, в котором пользователь в реальном времени видит сообщения других участников и может отправлять свои. Сообщения каждого участника окрашены в уникальный цвет. Имя и цвет сообщений текущего пользователя должны сохраняться между обновлениями вкладки. На странице с чатом есть кнопка для “выхода” (возврата на страницу ввода имени).
 
-## Development server
+Фичи:
+Привлекательный (как минимум аккуратный) внешний вид клиента
+Ленивая загрузка сообщений: изначально загружается только N сообщений, остальные подгружаются при скроллинге
+Сохранение сервером сообщений между перезапусками
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Стек: 
+Angular (2+) без готовых UI-компонентов
+Node.js с TypeScript и без готовых библиотек для клиент-серверного взаимодействия
 
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Результат предпочтительно опубликовать в виде публичного моно-репозитория.
