@@ -57,7 +57,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         switchMap(() => this.chatService.getNewMessages())
       )
       .subscribe((message: Message) => {
-        console.log('WS RECEIVED:', message);
         this.messages.push(message);
         this.scrollToBottom();
         this.changeDetector.detectChanges();
