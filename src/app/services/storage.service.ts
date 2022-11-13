@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { User } from '../types/user.types';
+import { User } from '../../../types/user.types';
 
 const STORAGE_KEY = 'currentUser';
 

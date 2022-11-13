@@ -3,14 +3,17 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { RoutingPaths } from '../app-routing.module';
 import { StorageService } from '../services/storage.service';
-import { Message } from '../types/chat.types';
-import { User } from '../types/user.types';
+import { Message } from '../../../types/chat.types';
+import { User } from '../../../types/user.types';
+import { ChatService } from '../services/chat.service';
+import { Subscription, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-chat',
@@ -18,56 +21,65 @@ import { User } from '../types/user.types';
   styleUrls: ['./chat.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('chat') chat!: ElementRef;
   @ViewChild('textarea') textarea!: ElementRef;
-  currentUser!: User | null;
-  messages: Message[] = [
-    {
-      uuid: 0,
-      author: 'System',
-      color: 'rgb(238, 235, 235)',
-      text: "Welcome to tomoru chat! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-      created: Date.now(),
-    },
-  ];
-  // if there is no active backend-section, redirect to login.component
+  messages: Message[] = [];
+  private currentUser!: User | null;
+  private subscription?: Subscription;
 
   constructor(
     private readonly router: Router,
     private readonly storageService: StorageService,
-    private readonly changeDetector: ChangeDetectorRef
+    private readonly changeDetector: ChangeDetectorRef,
+    private readonly chatService: ChatService
   ) {}
 
   ngOnInit(): void {
-    this.storageService.getCurrentUser().subscribe((user: User | null) => {
-      if (!user) {
-        this.router.navigate([`../${RoutingPaths.login}`]);
-      } else {
-        this.currentUser = user;
+    this.subscription = this.storageService
+      .getCurrentUser()
+      .pipe(
+        tap((user: User | null) => {
+          if (!user) {
+            this.router.navigate([`../${RoutingPaths.login}`]);
+          } else {
+            this.currentUser = user;
+          }
+        }),
+        switchMap(() => this.chatService.getMessages()),
+        tap((messages: Message[]) => {
+          this.messages = messages;
+          this.chatService.estalishWebSocketConnection();
+          this.changeDetector.detectChanges();
+        }),
+        switchMap(() => this.chatService.getNewMessages())
+      )
+      .subscribe((message: Message) => {
+        console.log('WS RECEIVED:', message);
+        this.messages.push(message);
+        setTimeout(() => (this.chat.nativeElement.scrollTop = this.chat.nativeElement.scrollHeight));
         this.changeDetector.detectChanges();
-      }
-    });
+      });
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     this.textarea.nativeElement.focus();
   }
 
-  isUserMessage(uuid: number) {
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
+
+  isUserMessage(uuid: number): boolean {
     return this.storageService.isCurrentUser(uuid);
   }
 
   sendMessage(message: string): void {
-    this.messages.push({
-      uuid: this.currentUser!.uuid,
-      author: this.currentUser!.name,
-      color: this.currentUser!.color,
-      text: message,
-      created: Date.now()
-    });
-    this.textarea.nativeElement.value = '';
-    setTimeout(() => this.chat.nativeElement.scrollTop = this.chat.nativeElement.scrollHeight);
-    this.changeDetector.detectChanges();
+    this.chatService
+      .postMessage({ text: message, ...this.currentUser })
+      .subscribe(() => {
+        this.textarea.nativeElement.value = '';
+        this.changeDetector.detectChanges();
+      });
   }
 }

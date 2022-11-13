@@ -1,7 +1,11 @@
 export interface Message {
   uuid: number;
-  author: string;
+  name: string;
   color: string;
   text: string;
   created: number;
 };
+
+export interface Chat {
+  messages: Message[];
+}
