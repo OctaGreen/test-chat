@@ -1,11 +1,1 @@
-{
-  "messages": [
-    {
-      "uuid": 0,
-      "name": "System",
-      "color": "rgb(238, 235, 235)",
-      "text": "Welcome to tomoru chat! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      "created": 1668320955760
-    }
-  ]
-}
+{"messages":[{"uuid":0,"name":"System","color":"rgb(238, 235, 235)","text":"Welcome to tomoru chat! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.","created":1668320955760}]}

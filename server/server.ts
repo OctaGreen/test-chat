@@ -5,11 +5,23 @@ import { dirname } from 'path';
 import { Chat, Message } from 'types/chat.types';
 import { WebSocketServer } from 'ws';
 import { User } from 'types/user.types';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const databasePath = `${__dirname}/database.json`;
 
-const chat: Chat = JSON.parse(fs.readFileSync(`${__dirname}/database.json`).toString());
+const chat: Chat = JSON.parse(fs.readFileSync(databasePath).toString());
+const messagesLength$: Subject<number> = new Subject();
+messagesLength$.pipe(debounceTime(1000), distinctUntilChanged()).subscribe(() =>
+  fs.writeFile(databasePath, JSON.stringify(chat), (error) => {
+    if (error) {
+      console.error('An error has occurred while database update: ', error);
+      return;
+    }
+    console.log('Successfull database update');
+  })
+);
 
 const httpServer = http.createServer(
   (request: http.IncomingMessage, response: http.ServerResponse) => {
@@ -42,12 +54,10 @@ const httpServer = http.createServer(
           body.push(chunk);
         })
         .on('end', () => {
-          let message: Partial<Message> = JSON.parse(
-            Buffer.concat(body).toString()
-          );
-          chat.messages.push({ created: Date.now(), ...message } as Message);
-          webSocketServer.clients.forEach((client) => client.send(JSON.stringify({ created: Date.now(), ...message })))
-
+          let message: Message = { created: Date.now(), ...JSON.parse(Buffer.concat(body).toString()) };
+          chat.messages.push(message);
+          messagesLength$.next(chat.messages.length);
+          webSocketServer.clients.forEach((client) => client.send(JSON.stringify(message)));
           response.statusCode = 200;
           response.setHeader('Content-Type', 'text/plain');
           response.end();
