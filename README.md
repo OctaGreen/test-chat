@@ -1,3 +1,14 @@
+# Run app:
+
+1. perform command: npm install
+2. open first terminal
+3. perform command: npm run start:server
+4. open second terminal
+5. perform command: npm start
+6. open browser on localhost:4200
+7. enjoy
+
+# Task:
 Групповой чат
 Предлагается реализовать клиент-серверное приложение группового чата.
 
