@@ -34,7 +34,6 @@ export class ChatService {
   }
 
   joinChat(name: string): Observable<User> {
-    console.log('join chat', name);
     return this.http.post<User>(`/api/join`, { name });
   }
 

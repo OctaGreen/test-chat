@@ -27,6 +27,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   messages: Message[] = [];
   private currentUser!: User | null;
   private subscription?: Subscription;
+  private scrollLoadingTriggered: boolean = false;
 
   constructor(
     private readonly router: Router,
@@ -50,6 +51,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         tap((messages: Message[]) => {
           this.messages = messages;
           this.chatService.estalishWebSocketConnection();
+          this.scrollToBottom();
           this.changeDetector.detectChanges();
         }),
         switchMap(() => this.chatService.getNewMessages())
@@ -57,9 +59,9 @@ export class ChatComponent implements OnInit, OnDestroy {
       .subscribe((message: Message) => {
         console.log('WS RECEIVED:', message);
         this.messages.push(message);
-        setTimeout(() => (this.chat.nativeElement.scrollTop = this.chat.nativeElement.scrollHeight));
+        this.scrollToBottom();
         this.changeDetector.detectChanges();
-      });
+      }, error => console.error(error));
   }
 
   ngAfterViewInit(): void {
@@ -80,6 +82,22 @@ export class ChatComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.textarea.nativeElement.value = '';
         this.changeDetector.detectChanges();
-      });
+      }, error => console.error(error));
+  }
+
+  scrollToBottom(): void {
+    setTimeout(() => (this.chat.nativeElement.scrollTop = this.chat.nativeElement.scrollHeight));
+  }
+
+  //todo add is_first to Message model to prevent redundant requests performing
+  onScroll(scrollTop: number): void {
+    if (scrollTop === 0 && !this.scrollLoadingTriggered) {
+      this.scrollLoadingTriggered = true;
+      this.chatService.getPreviousMessages(this.messages[0].id).subscribe((messages: Message[]) => {
+        this.messages.unshift(...messages);
+        this.scrollLoadingTriggered = false;
+        this.changeDetector.detectChanges();
+      }, error => console.error(error));
+    }
   }
 }

@@ -1,4 +1,5 @@
 export interface Message {
+  id: number;
   uuid: number;
   name: string;
   color: string;

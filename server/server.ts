@@ -6,6 +6,7 @@ import { Chat, Message } from 'types/chat.types';
 import { WebSocketServer } from 'ws';
 import { User } from 'types/user.types';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import * as url from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,13 +24,26 @@ messagesLength$.pipe(debounceTime(1000), distinctUntilChanged()).subscribe(() =>
   })
 );
 
+const messagesPerPage: number = 10;
+
 const httpServer = http.createServer(
   (request: http.IncomingMessage, response: http.ServerResponse) => {
-    console.log('request.url', request.url);
-    if (request.url === '/messages' && request.method === 'GET') {
-      //todo handle param 'oldestMessageId'
+    const queryObject: url.Url = url.parse(request.url!, true);
+    if (queryObject.pathname === '/messages' && request.method === 'GET') {
+      const { oldestMessageId } = queryObject.query as { oldestMessageId: string; };
+      const oldestMessageIndex: number = chat.messages.findIndex((value: Message) => value.id === Number(oldestMessageId));
+      let targetSlice: Message[];
+      if (oldestMessageIndex === 0) {
+        targetSlice = [];
+      } else if (oldestMessageIndex === -1) {
+        targetSlice = chat.messages.slice(-messagesPerPage)
+      } else if (oldestMessageIndex <= messagesPerPage) {
+        targetSlice = chat.messages.slice(0, messagesPerPage);
+      } else {
+        targetSlice = chat.messages.slice(oldestMessageIndex - messagesPerPage, oldestMessageIndex);
+      }
       response.setHeader('Content-Type', 'application/json');
-      response.end(JSON.stringify(chat.messages));
+      response.end(JSON.stringify(targetSlice));
     } else if (request.url === '/join' && request.method === 'POST') {
       const body: any = [];
       request
@@ -54,10 +68,17 @@ const httpServer = http.createServer(
           body.push(chunk);
         })
         .on('end', () => {
-          let message: Message = { created: Date.now(), ...JSON.parse(Buffer.concat(body).toString()) };
+          // in real DB should be incremental ID, instead of random
+          let message: Message = {
+            id: Math.round(Math.random() * 1_000_000),
+            created: Date.now(),
+            ...JSON.parse(Buffer.concat(body).toString()),
+          };
           chat.messages.push(message);
           messagesLength$.next(chat.messages.length);
-          webSocketServer.clients.forEach((client) => client.send(JSON.stringify(message)));
+          webSocketServer.clients.forEach((client) =>
+            client.send(JSON.stringify(message))
+          );
           response.statusCode = 200;
           response.setHeader('Content-Type', 'text/plain');
           response.end();
