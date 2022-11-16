@@ -27,6 +27,5 @@ export class AppComponent {
   leave(): void {
     this.storageService.clearStorage();
     this.router.navigate([`../${RoutingPaths.login}`]);
-    this.changeDetector.detectChanges();
   }
 }

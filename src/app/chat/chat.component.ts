@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -21,12 +22,14 @@ import { Subscription, switchMap, tap } from 'rxjs';
   styleUrls: ['./chat.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChatComponent implements OnInit, OnDestroy {
+export class ChatComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chat') chat!: ElementRef;
   @ViewChild('textarea') textarea!: ElementRef;
   messages: Message[] = [];
   private currentUser!: User | null;
   private subscription?: Subscription;
+  private postMessageSubscription?: Subscription;
+  private getPreviousMessageSubscription?: Subscription;
   private scrollLoadingTriggered: boolean = false;
 
   constructor(
@@ -69,14 +72,17 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.postMessageSubscription?.unsubscribe();
+    this.getPreviousMessageSubscription?.unsubscribe();
   }
 
   isUserMessage(uuid: number): boolean {
     return this.storageService.isCurrentUser(uuid);
   }
 
-  sendMessage(message: string): void {
-    this.chatService
+  sendMessage(event: Event): void {
+    const message: string = (event.target as HTMLTextAreaElement).value;
+    this.postMessageSubscription = this.chatService
       .postMessage({ text: message, ...this.currentUser })
       .subscribe(() => {
         this.textarea.nativeElement.value = '';
@@ -89,10 +95,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   //todo add is_first to Message model to prevent redundant requests performing
-  onScroll(scrollTop: number): void {
+  onScroll(event: Event): void {
+    const scrollTop: number = (event.target as HTMLElement).scrollTop;
     if (scrollTop === 0 && !this.scrollLoadingTriggered) {
       this.scrollLoadingTriggered = true;
-      this.chatService.getPreviousMessages(this.messages[0].id).subscribe((messages: Message[]) => {
+      this.getPreviousMessageSubscription = this.chatService.getPreviousMessages(this.messages[0].id).subscribe((messages: Message[]) => {
         this.messages.unshift(...messages);
         this.scrollLoadingTriggered = false;
         this.changeDetector.detectChanges();
